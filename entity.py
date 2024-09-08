@@ -4,18 +4,16 @@ from vector import Vector2
 from constants import *
 from random import randint
 
-wait = True
-
 class Entity(object):
-    def __init__(self, node, algorithm=None):
+    def __init__(self, node, color=None, speed=None, algorithm=None):
         self.name = None
         self.directions = {UP: Vector2(0, -1), DOWN: Vector2(0, 1),
                            LEFT: Vector2(-1, 0), RIGHT: Vector2(1, 0), STOP: Vector2()}
         self.direction = STOP
-        self.speed = 100 * TILEWIDTH / 16
+        self.speed = speed * TILEWIDTH / 16
         self.radius = 10
         self.collideRadius = 5
-        self.color = WHITE
+        self.color = color
         self.node = node
         self.setPosition()
         self.target = node
@@ -127,7 +125,7 @@ class Entity(object):
 
         if target.neighbors[d] is None:
             if target.neighbors[self.direction] is not None:
-                path.append([target.neighbors[self.direction]])
+                path.append(target.neighbors[self.direction])
                 target = target.neighbors[self.direction]
 
         while True:
@@ -137,7 +135,7 @@ class Entity(object):
                 target = target.neighbors[d]
             else:
                 break
-            if len(path) >= 3:
+            if len(path) >= 2:
                 self.path = path
                 self.algorithm = 'handling_cut'
                 return
@@ -191,6 +189,7 @@ class Entity(object):
         else:
             self.get_closer()
 
+
     def validDirections(self):
         directions = []
         for key in [UP, DOWN, LEFT, RIGHT]:
@@ -201,8 +200,10 @@ class Entity(object):
             directions.append(self.direction * -1)
         return directions
 
+
     def randomDirection(self, directions):
         return directions[randint(0, len(directions) - 1)]
+
 
     def goalDirection(self, directions):
         distances = []

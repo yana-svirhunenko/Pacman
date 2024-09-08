@@ -6,15 +6,16 @@ from entity import *
 
 class Pacman(object):
 
-    def __init__(self, node):
-        Entity.__init__(self, node)
+    def __init__(self, node, speed=None):
+        Entity.__init__(self, node=node, speed=speed)
         self.name = PACMAN
         self.color = YELLOW
 
     def setPosition(self):
         self.position = self.node.position.copy()
 
-    def update(self, dt):	
+    def update(self, dt):
+
         self.position += self.directions[self.direction] * self.speed * dt
         direction = self.getValidKey()
         if self.overshotTarget():
@@ -30,17 +31,20 @@ class Pacman(object):
         else: 
             if self.oppositeDirection(direction):
                 self.reverseDirection()
-        
+
+
     def validDirection(self, direction):
         if direction is not STOP:
             if self.node.neighbors[direction] is not None:
                 return True
         return False
 
+
     def getNewTarget(self, direction):
         if self.validDirection(direction):
             return self.node.neighbors[direction]
         return self.node
+
 
     def getValidKey(self):
         key_pressed = pygame.key.get_pressed()
@@ -54,6 +58,7 @@ class Pacman(object):
             return RIGHT
         return STOP
 
+
     def overshotTarget(self):
         if self.target is not None:
             vec1 = self.target.position - self.node.position
@@ -62,19 +67,22 @@ class Pacman(object):
             node2Self = vec2.magnitudeSquared()
             return node2Self >= node2Target
         return False
-    
+
+
     def reverseDirection(self):
         self.direction *= -1
         temp = self.node
         self.node = self.target
         self.target = temp
 
+
     def oppositeDirection(self, direction):
         if direction is not STOP:
             if direction == self.direction * -1:
                 return True
         return False
-    
+
+
     def eatPellets(self, pelletList):
         for pellet in pelletList:
             d = self.position - pellet.position
@@ -83,6 +91,7 @@ class Pacman(object):
             if dSquared <= rSquared:
                 return pellet
         return None
+
 
     def render(self, screen):
         p = self.position.asInt()
