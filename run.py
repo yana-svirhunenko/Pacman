@@ -75,7 +75,7 @@ class GameController(object):
 
             if self.path_timer >= self.path_interval and self.not_connected:
 
-                self.map = np.array([['.' if cell == '=' else cell for cell in row] for row in self.map])
+                self.map = np.array([['#' if cell == '=' else cell for cell in row] for row in self.map])
                 self.nodes.connectVertically(self.map)
                 self.not_connected = False
                 for g in self.ghosts:

@@ -2,9 +2,8 @@ import pygame
 from pygame.locals import *
 from nodes import *
 
-
 def between_ghosts(pacman, ghosts, ghost):
-    #print(pacman.position)
+
     for g in ghosts:
         if g == ghost:
             continue
@@ -48,25 +47,76 @@ def get_entity_target(entity):
         return fin
 
 
+def get_node_directions(node, directions):
+
+    dir = []
+    for d in directions:
+        if d == STOP:
+            continue
+        if node.neighbors[d] is not None:
+            dir.append(d)
+    return dir
+
+
+def handle_cut(ghost):
+
+        if ghost.direction == STOP:
+            return
+
+        directions = get_node_directions(ghost.target, ghost.directions)
+
+        if ghost.direction in directions:
+            directions.remove(ghost.direction)
+
+        opposite_dir = ghost.direction * -1
+        if opposite_dir in directions:
+            directions.remove(opposite_dir)
+
+        if len(directions) == 0:
+            return
+
+        d = ghost.direction
+        gd = ghost.goalDirection(directions)
+        target = ghost.target.neighbors[gd]
+
+        path = [ghost.target, target]
+        ghost.path = path
+
+        while True:
+            if target.neighbors[d] is not None:
+                path.append(target.neighbors[d])
+                target = target.neighbors[d]
+            else:
+                break
+            if len(path) >= 3:
+                break
+
+        ghost.path = path
+        ghost.algorithm = 'deterministic'
+
+
+def ghost_default_navigation(ghost, pacman):
+    ghost.algorithm = 'deterministic'
+    ghost.path = None
+    ghost.goal = pacman.position
+
+
 def euristic1(ghost, ghosts, pacman):
 
     ghost.goal = pacman.position
     if ghost.target is None:
+        ghost_default_navigation(ghost, pacman)
         return
 
     if between_ghosts(pacman, ghosts, ghost):
-        ghost.path = None
-        ghost.goal = pacman.position
+        ghost_default_navigation(ghost, pacman)
         return
 
     if one_on_pacman_line(pacman, ghosts, ghost):
-        #print('ooooooooooooo')
-        ghost.path = None
-        ghost.goal = pacman.position
+        ghost_default_navigation(ghost, pacman)
         return
 
     ghost_target = get_entity_target(ghost)
-
     for g in ghosts:
         if g == ghost:
             continue
@@ -76,48 +126,41 @@ def euristic1(ghost, ghosts, pacman):
             ghost.path = None
             ghost.algorithm = 'random'
             return
-        ghost.algorithm = 'deterministic'
 
-
+    ghost.algorithm = 'deterministic'
     if ghost.path is None and distance(pacman.position, ghost.position) >= 200:
         r = dfs_find_path(ghost.target, pacman.target)
         ghost.path = r
     elif distance(pacman.position, ghost.position) < 200:
         ghost.path = None
+        ghost.goal = pacman.position
 
 
 def euristic2(ghost, ghosts, pacman):
 
     if ghost.target is None:
+        ghost_default_navigation(ghost, pacman)
         return
 
     if between_ghosts(pacman, ghosts, ghost):
-        print('bbbbbbbb')
-        ghost.algorithm = 'random'
-        ghost.path = None
-        ghost.goal = pacman.position
+        ghost_default_navigation(ghost, pacman)
         return
 
     if one_on_pacman_line(pacman, ghosts, ghost):
-        print('ooooooooo')
-        ghost.algorithm = 'random'
-        ghost.path = None
-        ghost.goal = pacman.position
+        ghost_default_navigation(ghost, pacman)
         return
 
-    if ghost.algorithm == 'handling_cut' and ghost.path is not None:
+    if ghost.algorithm == 'cut' and ghost.path is not None:
         return
 
     ghost_target = get_entity_target(ghost)
-
     for g in ghosts:
         if g == ghost:
             continue
         others_target = get_entity_target(g)
 
         if others_target == ghost_target and g.direction == ghost.direction:
-            ghost.path = None
-            ghost.algorithm = 'cut'
+            handle_cut(ghost)
             return
 
     ghost.algorithm = 'deterministic'
@@ -132,14 +175,14 @@ def euristic2(ghost, ghosts, pacman):
         ghost.goal = pacman_destination.position
 
 
-
 def euristic3(ghost, pacman):
 
     if ghost.target == None:
+        ghost_default_navigation(ghost, pacman)
         return
 
-    if distance(pacman.position, ghost.position) <= 20:
-        ghost.path = None
+    if distance(pacman.position, ghost.position) <= 50:
+        ghost_default_navigation(ghost, pacman)
         return
 
     r = dijkstra_find_path(ghost.target, pacman.node)

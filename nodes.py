@@ -1,6 +1,3 @@
-import heapq
-import math
-from collections import deque
 import pygame
 from vector import Vector2
 from constants import *
@@ -32,7 +29,7 @@ class NodeGroup(object):
         self.map = map
         self.nodesLUT = {}
         self.nodeSymbols = ['+', '-']
-        self.pathSymbols = ['.']
+        self.pathSymbols = ['.', '#']
         self.start_node = None
         self.ghost_node = None
         self.createNodeTable(map)

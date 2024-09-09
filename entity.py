@@ -96,54 +96,6 @@ class Entity(object):
             self.path = None
             self.handleNoPath()
 
-
-    def handleCut(self):
-
-        if self.path is not None:
-            return
-
-        if self.direction == STOP:
-            self.handleNoPath()
-
-        directions = self.validDirections()
-
-        if self.direction in directions:
-            directions.remove(self.direction)
-
-        opposite_dir = self.direction * -1
-        if opposite_dir in directions:
-            directions.remove(opposite_dir)
-
-        if len(directions) == 0:
-            self.handleNoPath()
-            return
-
-        d = self.direction
-        self.direction = self.goalDirection(directions)
-        target = self.getNewTarget(self.direction)
-        self.target = target
-        path = [self.target]
-
-        if target.neighbors[d] is None:
-            if target.neighbors[self.direction] is not None:
-                path.append(target.neighbors[self.direction])
-                target = target.neighbors[self.direction]
-
-        while True:
-
-            if target.neighbors[d] is not None:
-                path.append(target.neighbors[d])
-                target = target.neighbors[d]
-            else:
-                break
-            if len(path) >= 3:
-                self.path = path
-                self.algorithm = 'handling_cut'
-                return
-
-        self.handleNoPath()
-
-
     def update(self, dt):
 
         self.position += self.directions[self.direction] * self.speed * dt
@@ -155,11 +107,7 @@ class Entity(object):
                 self.handleNoPath()
                 return
 
-            elif self.algorithm == 'cut':
-                self.handleCut()
-                return
-
-            elif self.algorithm == 'deterministic' or self.algorithm == 'handling_cut':
+            elif self.algorithm == 'deterministic' or self.algorithm == 'cut':
                 if self.path is None:
                     self.get_closer()
                 else:
