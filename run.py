@@ -1,14 +1,11 @@
-import random
-from pause import Pause
+from utils.pause import Pause
 import pygame
 from pygame.locals import *
-from constants import *
-from pacman import Pacman
-from nodes import *
-from pellets import PelletGroup
-from map_generator import *
-from ghosts import Ghost
-from behavior import *
+from entities.pacman import Pacman
+from map.pellets import PelletGroup
+from map.map_generator import *
+from entities.ghosts import Ghost
+from entities.behavior import *
 import numpy as np
 
 
@@ -32,7 +29,8 @@ class GameController(object):
 
     def restartGame(self):
         self.lives = 5
-        self.level = 1
+        self.level = 5
+        self.path_timer = 0
         self.pause.paused = True
         self.startGame()
 
@@ -47,6 +45,7 @@ class GameController(object):
     def nextLevel(self):
         self.showEntities()
         self.level += 1
+        self.path_timer = 0
         self.pause.paused = True
         self.startGame()
 
@@ -59,7 +58,7 @@ class GameController(object):
         self.pacman = Pacman(node=self.nodes.start_node, speed=100)
         self.pellets = PelletGroup(self.map)
 
-        self.ghost1 = Ghost(self.nodes.ghost_node, TEAL, speed=90, algorithm='random')
+        self.ghost1 = Ghost(self.nodes.ghost_node, BLUE, speed=90, algorithm='random')
         self.ghost2 = Ghost(self.nodes.ghost_node, ORANGE, speed=90, algorithm='random')
         self.ghost3 = Ghost(self.nodes.ghost_node, PINK, speed=90, algorithm='random')
         self.ghosts = [self.ghost1, self.ghost2, self.ghost3]
@@ -80,16 +79,18 @@ class GameController(object):
                 self.not_connected = False
                 for g in self.ghosts:
                     g.algorithm = 'deterministic'
+                print(self.ghost2.position)
 
             euristic1(self.ghost1, self.ghosts, self.pacman)
             euristic2(self.ghost2, self.ghosts, self.pacman)
             euristic3(self.ghost3, self.pacman)
+            #pacman_euristic(self.pacman, self.ghosts)
 
             self.ghost1.update(dt)
             self.ghost2.update(dt)
             self.ghost3.update(dt)
 
-            self.pacman.update(dt)
+            self.pacman.update(dt, self.ghosts)
             self.checkPelletEvents()
             self.checkGhostEvents()
 
@@ -136,11 +137,9 @@ class GameController(object):
     def checkGhostEvents(self):
         for ghost in self.ghosts:
             if self.pacman.collideCheck(ghost):
-                    return
                     if self.pacman.alive:
                         self.lives -= 1
                         self.pacman.die()
-                        self.pacman.direction = STOP
                         self.hideEntities()
                         if self.lives <= 0:
                             self.pause.setPause(pauseTime=3)

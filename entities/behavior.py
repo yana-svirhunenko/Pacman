@@ -1,6 +1,7 @@
-import pygame
+import math
 from pygame.locals import *
-from nodes import *
+from map.nodes import *
+
 
 def between_ghosts(pacman, ghosts, ghost):
 
@@ -78,8 +79,13 @@ def handle_cut(ghost):
         d = ghost.direction
         gd = ghost.goalDirection(directions)
         target = ghost.target.neighbors[gd]
-
         path = [ghost.target, target]
+
+        if target.neighbors[d] is None:
+            if target.neighbors[gd] is not None:
+                path.append(target.neighbors[gd])
+                target = target.neighbors[gd]
+
         ghost.path = path
 
         while True:
@@ -92,7 +98,7 @@ def handle_cut(ghost):
                 break
 
         ghost.path = path
-        ghost.algorithm = 'deterministic'
+        ghost.algorithm = 'cut'
 
 
 def ghost_default_navigation(ghost, pacman):
@@ -129,8 +135,8 @@ def euristic1(ghost, ghosts, pacman):
 
     ghost.algorithm = 'deterministic'
     if ghost.path is None and distance(pacman.position, ghost.position) >= 200:
-        r = dfs_find_path(ghost.target, pacman.target)
-        ghost.path = r
+        path = depth_first_search_find_path(ghost.target, pacman.target)
+        ghost.path = path
     elif distance(pacman.position, ghost.position) < 200:
         ghost.path = None
         ghost.goal = pacman.position
@@ -170,14 +176,15 @@ def euristic2(ghost, ghosts, pacman):
         ghost.path = None
         ghost.goal = pacman.position
     else:
-        r = bfs_find_path(ghost.target, pacman_destination)
-        ghost.path = r
+        path = breadth_first_search_find_path(ghost.target, pacman_destination)
+        ghost.path = path
         ghost.goal = pacman_destination.position
+
 
 
 def euristic3(ghost, pacman):
 
-    if ghost.target == None:
+    if ghost.target is None:
         ghost_default_navigation(ghost, pacman)
         return
 
@@ -189,7 +196,7 @@ def euristic3(ghost, pacman):
     ghost.path = r
 
 
-def dfs_find_path(current_node, finish_node, visited=None, path=None):
+def depth_first_search_find_path(current_node, finish_node, visited=None, path=None):
 
     if visited is None:
         visited = set()
@@ -204,7 +211,7 @@ def dfs_find_path(current_node, finish_node, visited=None, path=None):
 
     for direction, neighbor in current_node.neighbors.items():
         if neighbor is not None and neighbor not in visited:
-            result = dfs_find_path(neighbor, finish_node, visited, path)
+            result = depth_first_search_find_path(neighbor, finish_node, visited, path)
             if result:
                 return result
 
@@ -212,13 +219,14 @@ def dfs_find_path(current_node, finish_node, visited=None, path=None):
     return None
 
 
-def bfs_find_path(start_node, finish_node):
+def breadth_first_search_find_path(start_node, finish_node):
 
-    queue = deque([(start_node, [start_node])])
+    nodes = [(start_node, [start_node])]
     visited = set()
 
-    while queue:
-        current_node, path = queue.popleft()
+    while nodes:
+        current_node, path = nodes[0]
+        nodes = nodes[1:]
 
         if current_node == finish_node:
             return path
@@ -227,22 +235,22 @@ def bfs_find_path(start_node, finish_node):
 
         for direction, neighbor in current_node.neighbors.items():
             if neighbor is not None and neighbor not in visited:
-                queue.append((neighbor, path + [neighbor]))
+                nodes.append((neighbor, path + [neighbor]))
 
     return None
 
 
-def dijkstra_find_path(start_node, finish_node):
+def dijkstra_find_path(start_node, finish_node, return_dist=False):
 
     node_queue = [(0, start_node, [start_node])]
     distances = {start_node: 0}
-
     visited = set()
 
     while node_queue:
 
         node_queue.sort(key=lambda x: x[0])
-        current_distance, current_node, path = node_queue.pop(0)
+        current_distance, current_node, path = node_queue[0]
+        node_queue.pop(0)
 
         if current_node in visited:
             continue
@@ -250,7 +258,10 @@ def dijkstra_find_path(start_node, finish_node):
         visited.add(current_node)
 
         if current_node == finish_node:
-            return path
+            if return_dist:
+                return current_distance
+            else:
+                return path
 
         for direction, neighbor in current_node.neighbors.items():
             if neighbor is None:

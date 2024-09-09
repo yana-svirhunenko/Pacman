@@ -1,8 +1,7 @@
-import pygame
 from pygame.locals import *
-from vector import Vector2
-from constants import *
-from entity import Entity
+from utils.vector import Vector2
+from utils.constants import *
+from entities.entity import Entity
 
 class Ghost(Entity):
 

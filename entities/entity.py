@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
-from vector import Vector2
-from constants import *
+from utils.vector import Vector2
+from utils.constants import *
 from random import randint
 
 class Entity(object):
@@ -35,6 +35,7 @@ class Entity(object):
         if self.validDirection(direction):
             return self.node.neighbors[direction]
         return self.node
+
 
     def overshotTarget(self):
         if self.target is not None:
