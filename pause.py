@@ -1,5 +1,4 @@
 
-
 class Pause(object):
     def __init__(self, paused=False):
         self.paused = paused

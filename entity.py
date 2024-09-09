@@ -19,7 +19,7 @@ class Entity(object):
         self.target = node
         self.visible = True
         self.path = None
-        self.algorithm = None
+        self.algorithm = algorithm
 
     def setPosition(self):
         self.position = self.node.position.copy()
@@ -116,6 +116,7 @@ class Entity(object):
 
         if len(directions) == 0:
             self.handleNoPath()
+            return
 
         d = self.direction
         self.direction = self.goalDirection(directions)
@@ -135,7 +136,7 @@ class Entity(object):
                 target = target.neighbors[d]
             else:
                 break
-            if len(path) >= 2:
+            if len(path) >= 3:
                 self.path = path
                 self.algorithm = 'handling_cut'
                 return
@@ -145,7 +146,6 @@ class Entity(object):
 
     def update(self, dt):
 
-
         self.position += self.directions[self.direction] * self.speed * dt
 
         if self.overshotTarget():
@@ -153,18 +153,17 @@ class Entity(object):
 
             if self.algorithm == 'random':
                 self.handleNoPath()
-                self.setPosition()
                 return
 
-            if self.algorithm == 'cut':
+            elif self.algorithm == 'cut':
                 self.handleCut()
-                self.setPosition()
                 return
 
-            if self.path is None:
-                self.get_closer()
-            else:
-                self.handlePath()
+            elif self.algorithm == 'deterministic' or self.algorithm == 'handling_cut':
+                if self.path is None:
+                    self.get_closer()
+                else:
+                    self.handlePath()
 
             self.setPosition()
 

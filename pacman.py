@@ -10,6 +10,27 @@ class Pacman(object):
         Entity.__init__(self, node=node, speed=speed)
         self.name = PACMAN
         self.color = YELLOW
+        self.alive = True
+
+    def collideCheck(self, other):
+        d = self.position - other.position
+        dSquared = d.magnitudeSquared()
+        rSquared = (self.collideRadius + other.collideRadius)**2
+        if dSquared <= rSquared:
+            return True
+        return False
+
+    def reset(self, node):
+
+        self.alive = True
+        self.node = node
+        self.target = node
+        self.setPosition()
+
+    def die(self):
+        self.alive = False
+        self.direction = STOP
+
 
     def setPosition(self):
         self.position = self.node.position.copy()

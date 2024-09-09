@@ -22,11 +22,25 @@ def extract_node_coordinates(matrix):
     return nodesr, nodesc
 
 
-def connect_node(r, c, matrix):
+def connect_node(r, c, matrix, difficulty):
 
+    chance = 1 / difficulty
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    sides = [0, 0, 0, 0]
 
-    for dr, dc in directions:
+    random_indices = random.sample(range(4), 2)
+    for idx in random_indices:
+        sides[idx] = 1
+
+    for i in range(4):
+        if sides[i] == 0:
+            sides[i] = 1 if random.random() < chance else 0
+
+    for i, (dr, dc) in enumerate(directions):
+
+        if sides[i] == 0:
+            continue
+
         nr, nc = r, c
         while 0 <= nr < matrix.shape[0] and 0 <= nc < matrix.shape[1]:
             nr += dr
@@ -47,7 +61,7 @@ def is_inside_room(r, c, room_params):
     return start_row <= r < start_row + room_height and start_col <= c < start_col + room_width
 
 
-def place_nodes(matrix, num_nodes, nodesr, nodesc, row_range, col_range, room_params):
+def place_nodes(matrix, num_nodes, nodesr, nodesc, row_range, col_range, room_params, difficulty):
 
     attempts = 50
     r1, r2 = row_range
@@ -60,7 +74,7 @@ def place_nodes(matrix, num_nodes, nodesr, nodesc, row_range, col_range, room_pa
                 matrix[r, c] = '+'
                 nodesr.append(r)
                 nodesc.append(c)
-                connect_node(r, c, matrix)
+                connect_node(r, c, matrix, difficulty)
                 break
 
 
@@ -117,10 +131,10 @@ def generate_map(difficulty):
     for r, c in inner_corners:
         matrix[r, c] = '+'
 
-    num_nodes = (difficulty * 3 + 7) // 4
+    num_nodes = (difficulty * 5 + 7) // 4
     nodesr, nodesc = extract_node_coordinates(matrix)
     room_params = [start_row, room_height, start_col, room_width]
-
+    #print(num)
     quadrants = [
         (1, 17, 1, 13),
         (1, 17, 14, 27),
@@ -131,7 +145,7 @@ def generate_map(difficulty):
     for i in range(num_nodes):
         for quadrant in quadrants:
             row_range, col_range = quadrant[:2], quadrant[2:]
-            place_nodes(matrix, 1, nodesr, nodesc, row_range, col_range, room_params)
+            place_nodes(matrix, 1, nodesr, nodesc, row_range, col_range, room_params, difficulty)
 
 
     # Print the map
