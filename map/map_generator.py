@@ -24,7 +24,11 @@ def extract_node_coordinates(matrix):
 
 def connect_node(r, c, matrix, difficulty):
 
-    chance = 1 / difficulty
+    try:
+        chance = 1 / difficulty
+    except Exception:
+        chance = 1/10
+
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     sides = [0, 0, 0, 0]
 
@@ -81,11 +85,15 @@ def place_nodes(matrix, num_nodes, nodesr, nodesc, row_range, col_range, room_pa
 def generate_map(difficulty):
 
     matrix = np.full((36, 29), '0', dtype=str)
-
+    upper_margin = 3
+    lower_margin = 1
     matrix[:, 0] = '9'
     matrix[:, -1] = '9'
-    matrix[1, :] = '9'
-    matrix[-2, :] = '9'
+    matrix[upper_margin, :] = '9'
+    matrix[-(lower_margin + 1), :] = '9'
+
+    matrix[:upper_margin, :] = '3'
+    matrix[-lower_margin:, :] = '3'
 
     room_height, room_width = 6, 9
     start_row = (36 - room_height) // 2
@@ -100,14 +108,14 @@ def generate_map(difficulty):
     matrix[start_row, entrance_col_start:entrance_col_start + 3] = '='
     matrix[start_row + 1:start_row + room_height - 1, start_col + 1:start_col + room_width - 1] = '-'
 
-    matrix[2, 2:27] = '.'
-    matrix[33, 2:27] = '.'
-    matrix[2:34, 1] = '.'
-    matrix[2:34, 27] = '.'
+    matrix[1 + upper_margin, 2:27] = '.'
+    matrix[34 - lower_margin, 2:27] = '.'
+    matrix[1 + upper_margin:34 - lower_margin, 1] = '.'
+    matrix[1 + upper_margin:34 - lower_margin, 27] = '.'
     matrix[17, 1:9] = '.'
     matrix[17, 19:27] = '.'
-    matrix[2:14, 14] = '.'
-    matrix[21:33, 14] = '.'
+    matrix[1 + upper_margin:14, 14] = '.'
+    matrix[21:34 - lower_margin, 14] = '.'
 
     start_row -= 1
     start_col -= 1
@@ -125,21 +133,23 @@ def generate_map(difficulty):
     matrix[start_row + 1:start_row + room_height - 1, start_col] = '.'
     matrix[start_row + 1:start_row + room_height - 1, start_col + room_width - 1] = '.'
 
-    matrix[start_row, entrance_col_start:entrance_col_start + 3] = '+'
+    inner_corners = [(upper_margin + 1, 1), (upper_margin + 1, 27),
+                     (34 - lower_margin, 1), (34 - lower_margin, 27),
+                     (17, 1), (17, 9), (17, 19), (17, 27), (upper_margin + 1, 14),
+                     (14, 14), (21, 14), (34 - lower_margin, 14)]
 
-    inner_corners = [(2, 1), (2, 27), (33, 1), (33, 27), (17, 1), (17, 9), (17, 19), (17, 27), (2, 14), (14, 14), (21, 14), (33, 14)]
     for r, c in inner_corners:
         matrix[r, c] = '+'
 
     num_nodes = (difficulty * 5 + 7) // 4
     nodesr, nodesc = extract_node_coordinates(matrix)
     room_params = [start_row, room_height, start_col, room_width]
-    #print(num)
+
     quadrants = [
-        (1, 17, 1, 13),
-        (1, 17, 14, 27),
-        (18, 34, 1, 13),
-        (18, 34, 14, 27)
+        (upper_margin, 17, upper_margin, 13),
+        (upper_margin, 17, 14, 27),
+        (18, 34 - lower_margin, upper_margin, 13),
+        (18, 34 - lower_margin, 14, 27)
     ]
 
     for i in range(num_nodes):
@@ -147,8 +157,9 @@ def generate_map(difficulty):
             row_range, col_range = quadrant[:2], quadrant[2:]
             place_nodes(matrix, 1, nodesr, nodesc, row_range, col_range, room_params, difficulty)
 
+    matrix[start_row, entrance_col_start:entrance_col_start + 3] = '+'
+    matrix[start_row + 2, entrance_col_start:entrance_col_start + 3] = '?'
 
-    # Print the map
     for row in matrix:
         print("".join(row))
 

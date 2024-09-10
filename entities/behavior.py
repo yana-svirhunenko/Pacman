@@ -2,6 +2,7 @@ import math
 from pygame.locals import *
 from map.nodes import *
 
+threshold = 5
 
 def between_ghosts(pacman, ghosts, ghost):
 
@@ -9,10 +10,10 @@ def between_ghosts(pacman, ghosts, ghost):
         if g == ghost:
             continue
 
-        if abs(ghost.position.x - g.position.x) <= 1 and abs(ghost.position.x - pacman.position.x) <= 1:
+        if abs(ghost.position.x - g.position.x) <= threshold and abs(ghost.position.x - pacman.position.x) <= threshold:
             if ghost.position.y <= pacman.position.y <= g.position.y or ghost.position.y >= pacman.position.y >= g.position.y:
                 return True
-        elif abs(ghost.position.y - g.position.y) <= 1 and abs(ghost.position.y - pacman.position.y) <= 1:
+        elif abs(ghost.position.y - g.position.y) <= threshold and abs(ghost.position.y - pacman.position.y) <= threshold:
             if ghost.position.x <= pacman.position.x <= g.position.x or ghost.position.x >= pacman.position.x >= g.position.x:
                 return True
     return False
@@ -20,13 +21,13 @@ def between_ghosts(pacman, ghosts, ghost):
 
 def one_on_pacman_line(pacman, ghosts, ghost):
 
-    if abs(ghost.position.x - pacman.position.x) >= 1 and abs(ghost.position.y - pacman.position.y) >= 1:
+    if abs(ghost.position.x - pacman.position.x) >= threshold and abs(ghost.position.y - pacman.position.y) >= threshold:
         return False
 
     for g in ghosts:
         if g == ghost:
             continue
-        if abs(g.position.x - ghost.position.x) <= 1 or abs(g.position.y - ghost.position.y) <= 1:
+        if abs(g.position.x - ghost.position.x) <= threshold or abs(g.position.y - ghost.position.y) <= threshold:
             return False
 
     return True
@@ -134,10 +135,10 @@ def euristic1(ghost, ghosts, pacman):
             return
 
     ghost.algorithm = 'deterministic'
-    if ghost.path is None and distance(pacman.position, ghost.position) >= 200:
+    if ghost.path is None and distance(pacman.position, ghost.position) >= 150:
         path = depth_first_search_find_path(ghost.target, pacman.target)
         ghost.path = path
-    elif distance(pacman.position, ghost.position) < 200:
+    elif distance(pacman.position, ghost.position) < 150:
         ghost.path = None
         ghost.goal = pacman.position
 

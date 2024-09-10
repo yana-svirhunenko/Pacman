@@ -29,13 +29,18 @@ class NodeGroup(object):
     def __init__(self, map):
         self.map = map
         self.nodesLUT = {}
-        self.nodeSymbols = ['+', '-']
+        self.nodeSymbols = ['+', '-', '?']
         self.pathSymbols = ['.', '#']
+        self.avoid = []
         self.start_node = None
         self.ghost_node = None
         self.createNodeTable(map)
         self.connectHorizontally(map)
         self.connectVertically(map)
+
+
+    def get_avoid_nodes(self):
+        return self.avoid
 
     def get_node_at_index(self, i):
         nodes_list = list(self.nodesLUT.values())
@@ -45,6 +50,7 @@ class NodeGroup(object):
 
 
     def createNodeTable(self, data, xoffset=0, yoffset=0):
+
         id = 0
         for row in list(range(data.shape[0])):
             for col in list(range(data.shape[1])):
@@ -58,6 +64,9 @@ class NodeGroup(object):
 
                     if [row, col] == ghost_node:
                         self.ghost_node = n
+
+                    if data[row][col] == '?':
+                        self.avoid.append(n)
 
                     id += 1
 
@@ -110,9 +119,17 @@ class NodeGroup(object):
         return None
 
 
-    def render(self, screen, pacman=None):
+    def render(self, screen, nodes_h=None, poses=None):
         for node in self.nodesLUT.values():
-            if pacman is not None and node in pacman:
+            render = True
+            for p in poses:
+                #print(node.position)
+                if node == p:
+                    node.render(screen, WHITE)
+                    render = False
+            if not render: continue
+
+            if nodes_h is not None and node in nodes_h:
                 node.render(screen, WHITE)
             else:
                 node.render(screen)

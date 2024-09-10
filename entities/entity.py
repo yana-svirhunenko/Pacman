@@ -20,6 +20,7 @@ class Entity(object):
         self.visible = True
         self.path = None
         self.algorithm = algorithm
+        self.image = None
 
     def setPosition(self):
         self.position = self.node.position.copy()
@@ -62,9 +63,14 @@ class Entity(object):
         self.speed = speed * TILEWIDTH / 16
 
     def render(self, screen):
-        if self.visible:
+        if self.image is not None:
+            p = self.position.asTuple()
+            p = (p[0] - 13, p[1] - 20)
+            screen.blit(self.image, p)
+        else:
             p = self.position.asInt()
             pygame.draw.circle(screen, self.color, p, self.radius)
+
 
     def handleNoPath(self):
 
@@ -82,7 +88,8 @@ class Entity(object):
             ind = self.path.index(self.target)
         except ValueError:
             self.path = None
-            self.handleNoPath()
+            #self.handleNoPath()
+            self.get_closer()
             return
 
         if ind < len(self.path) - 1:
@@ -95,7 +102,8 @@ class Entity(object):
                     return dir
         else:
             self.path = None
-            self.handleNoPath()
+            #self.handleNoPath()
+            self.get_closer()
 
     def update(self, dt):
 
