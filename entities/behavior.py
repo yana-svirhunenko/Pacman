@@ -135,10 +135,10 @@ def euristic1(ghost, ghosts, pacman):
             return
 
     ghost.algorithm = 'deterministic'
-    if ghost.path is None and distance(pacman.position, ghost.position) >= 150:
-        path = depth_first_search_find_path(ghost.target, pacman.target)
+    if ghost.path is None and distance(pacman.position, ghost.position) >= 120:
+        path = breadth_first_search_find_path(ghost.target, pacman.node)
         ghost.path = path
-    elif distance(pacman.position, ghost.position) < 150:
+    elif distance(pacman.position, ghost.position) < 20:
         ghost.path = None
         ghost.goal = pacman.position
 

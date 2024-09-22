@@ -141,14 +141,14 @@ def generate_map(difficulty):
     for r, c in inner_corners:
         matrix[r, c] = '+'
 
-    num_nodes = (difficulty * 5 + 7) // 4
+    num_nodes = (difficulty * 7 + 7) // 2
     nodesr, nodesc = extract_node_coordinates(matrix)
     room_params = [start_row, room_height, start_col, room_width]
 
     quadrants = [
-        (upper_margin, 17, upper_margin, 13),
+        (upper_margin, 17, 1, 13),
         (upper_margin, 17, 14, 27),
-        (18, 34 - lower_margin, upper_margin, 13),
+        (18, 34 - lower_margin, 1, 13),
         (18, 34 - lower_margin, 14, 27)
     ]
 
@@ -160,7 +160,7 @@ def generate_map(difficulty):
     matrix[start_row, entrance_col_start:entrance_col_start + 3] = '+'
     matrix[start_row + 2, entrance_col_start:entrance_col_start + 3] = '?'
 
-    for row in matrix:
-        print("".join(row))
+    #for row in matrix:
+       # print("".join(row))
 
     return matrix
